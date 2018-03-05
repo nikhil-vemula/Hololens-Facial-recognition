@@ -25,12 +25,12 @@ conda activate ./environment
 ```
 * Enable Mobile hotspot in Windows 10 using Settings > Network & security > Mobile Hotspot. Turn On
 
-![Hotspot](url)
+![Hotspot](https://github.com/vsncipher/Hololens-Facial-recognition/raw/master/Scrshots/hotspot.PNG)
 
 
 * Edit the IP address in app.py replacing it with ip address found in cmd > ipconfig
 
-![ipaddress](url)
+![ipaddress](https://github.com/vsncipher/Hololens-Facial-recognition/raw/master/Scrshots/ipadd.PNG)
 
 * Run app.py using python
 ```
