@@ -1,0 +1,132 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+//using System.Net.Http;
+//using System.Net.Http.Headers;
+using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.XR.WSA.WebCam;
+
+public class Hud : MonoBehaviour{
+    //public Text Hello;
+    string filePath;
+    // Use this for initialization
+    void Start () {
+        PhotoCapture.CreateAsync(false, OnPhotoCaptureCreated);
+    }
+
+    PhotoCapture _photoCaptureObject = null;
+    void OnPhotoCaptureCreated(PhotoCapture captureObject)
+    {
+        _photoCaptureObject = captureObject;
+
+        Resolution cameraResolution = PhotoCapture.SupportedResolutions.OrderByDescending((res) => res.width * res.height).First();
+
+        CameraParameters c = new CameraParameters();
+        c.hologramOpacity = 0.0f;
+        c.cameraResolutionWidth = cameraResolution.width;
+        c.cameraResolutionHeight = cameraResolution.height;
+        c.pixelFormat = CapturePixelFormat.BGRA32;
+
+        captureObject.StartPhotoModeAsync(c, OnPhotoModeStarted);
+    }
+
+    private void OnPhotoModeStarted(PhotoCapture.PhotoCaptureResult result)
+    {
+        if (result.success)
+        {
+            
+            string filename = string.Format(@"terminator_analysis.jpg");
+            filePath = System.IO.Path.Combine(Application.persistentDataPath, filename);
+
+            //Hello.text = filePath;
+            if (File.Exists(filePath))
+            {
+                File.Delete(filePath);
+            }
+            _photoCaptureObject.TakePhotoAsync(filePath, PhotoCaptureFileOutputFormat.JPG, OnCapturedPhotoToDiskAsync);
+            
+        }
+        else
+        {
+            Debug.LogError("Unable to start photo mode!");
+        }
+    }
+    void OnCapturedPhotoToDiskAsync(PhotoCapture.PhotoCaptureResult result)
+    {
+        if (result.success)
+        {
+            Debug.Log("Saved Photo to disk!");
+            _photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
+#if !UNITY_EDITOR
+            var cameraRollFolder = Windows.Storage.KnownFolders.CameraRoll.Path;
+            Debug.Log(cameraRollFolder);
+            string p = cameraRollFolder + "/terminator_analysis.jpg";
+            if (File.Exists(p))
+            {
+                File.Delete(p);
+            }
+            File.Move(filePath, Path.Combine(cameraRollFolder, "terminator_analysis.jpg"));
+#endif
+        }
+        else
+        {
+            Debug.Log("Failed to save Photo to disk");
+        }
+        
+        _photoCaptureObject.StopPhotoModeAsync(OnStoppedPhotoMode);
+    }
+    void OnStoppedPhotoMode(PhotoCapture.PhotoCaptureResult result)
+    {
+        _photoCaptureObject.Dispose();
+        _photoCaptureObject = null;
+    }
+    // Update is called once per frame
+    void Update()
+    {
+
+    }
+
+    /*async void ProcessPhotoAsync(){
+        Windows.Storage.StorageFolder storageFolder = Windows.Storage.KnownFolders.CameraRoll;
+        Windows.Storage.StorageFile file = await storageFolder.GetFileAsync("terminator_analysis.jpg");
+        if (file != null)
+        {
+            // Application now has read/write access to the picked file
+            //this.textBlock.Text = "Picked photo: " + file.Name;
+            Debug.Log("File exists!!");
+        }
+        else
+        {
+            //this.textBlock.Text = "Operation cancelled.";
+            Debug.Log("File does not exists!!");
+        }
+
+
+        //convert filestream to byte array
+        byte[] fileBytes;
+        using (var fileStream = await file.OpenStreamForReadAsync())
+        {
+            var binaryReader = new BinaryReader(fileStream);
+            fileBytes = binaryReader.ReadBytes((int)fileStream.Length);
+        }
+
+        HttpClient client = new HttpClient();
+        client.BaseAddress = new Uri("http://127.0.0.1:5000/");
+        MultipartFormDataContent form = new MultipartFormDataContent();
+        HttpContent content = new StringContent("file");
+        form.Add(content, "file");
+        var stream = await file.OpenStreamForReadAsync();
+        content = new StreamContent(stream);
+        content.Headers.ContentDisposition = new ContentDispositionHeaderValue("form-data")
+        {
+            Name = "file",
+            FileName = file.Name
+        };
+        form.Add(content);
+        var response = await client.PostAsync("facerec", form);
+        //textBlock.Text = response.Content.ReadAsStringAsync().Result;
+    }*/
+}

@@ -1,0 +1,2 @@
+C:\Users\vsnick\Desktop\Hololens\Hud\App\GeneratedProjects\UWP\Assembly-CSharp\Assembly-CSharp.csproj;x86
+C:\Users\vsnick\Desktop\Hololens\Hud\App\Hud\Hud.csproj;x86

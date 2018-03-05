@@ -1,0 +1,4 @@
+
+conda env export > environment.yml
+
+curl -F "file=@robert.jpg" http://localhost:5000/
